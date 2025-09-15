@@ -8,7 +8,7 @@ Los argumentos te permiten hacer tus snippets más flexibles y reutilizables. Se
 
 ```bash
 # Agregar snippet con placeholders
-sn add <nombre> "<comando con ${placeholders}>"
+sn add <nombre> "<comando con \${placeholders}>"
 
 # Ejecutar con argumentos
 sn <nombre> argumento1 argumento2 argumento3 ...
@@ -16,22 +16,22 @@ sn <nombre> argumento1 argumento2 argumento3 ...
 
 ## Tipos de placeholders
 
-### 1. Placeholders por posición (${1}, ${2}, ${3}, ...)
+### 1. Placeholders por posición (\${1}, \${2}, \${3}, ...)
 
 ```bash
 # Snippet con múltiples argumentos
-sn add copiar "cp ${1} ${2}"
+sn add copiar "cp \${1} \${2}"
 
 # Uso - el orden importa!
 sn copiar archivo.txt /backup/
 # Se convierte en: cp archivo.txt /backup/
 ```
 
-### 2. Placeholders con nombres (${nombre}, ${archivo}, ${extension}, ${ruta})
+### 2. Placeholders con nombres (\${nombre}, \${archivo}, \${extension}, \${ruta})
 
 ```bash
 # Snippet con placeholders nombrados
-sn add comprimir "tar -czf ${nombre}.tar.gz ${archivo}"
+sn add comprimir "tar -czf \${nombre}.tar.gz \${archivo}"
 
 # Uso - más legible
 sn comprimir proyecto /home/user/project
@@ -44,7 +44,7 @@ sn comprimir proyecto /home/user/project
 
 ```bash
 # Crear snippet
-sn add buscar "find . -name \"${1}\" -type f"
+sn add buscar "find . -name \"\${1}\" -type f"
 
 # Usar con diferentes argumentos
 sn buscar "*.txt"          # Busca todos los .txt
@@ -56,7 +56,7 @@ sn buscar "documento*"     # Busca archivos que empiecen con "documento"
 
 ```bash
 # Crear snippet para renombrar
-sn add renombrar "mv ${1} ${2}"
+sn add renombrar "mv \${1} \${2}"
 
 # Usar
 sn renombrar viejo.txt nuevo.txt
@@ -67,7 +67,7 @@ sn renombrar viejo.txt nuevo.txt
 
 ```bash
 # Snippet complejo con 3 argumentos
-sn add procesar "convert ${1} -resize ${2} -quality ${3} output.jpg"
+sn add procesar "convert \${1} -resize \${2} -quality \${3} output.jpg"
 
 # Usar
 sn procesar imagen.png 800x600 90
@@ -78,7 +78,7 @@ sn procesar imagen.png 800x600 90
 
 ```bash
 # Snippet más legible con nombres
-sn add backup "tar -czf ${nombre}_backup.tar.gz ${archivo} --directory=${ruta}"
+sn add backup "tar -czf \${nombre}_backup.tar.gz \${archivo} --directory=\${ruta}"
 
 # Usar
 sn backup proyecto /home/user/project /backups
@@ -89,10 +89,10 @@ sn backup proyecto /home/user/project /backups
 
 | Placeholder | Equivalente | Descripción |
 |------------|-------------|-------------|
-| `${nombre}` | `${1}` | Primer argumento |
-| `${archivo}` | `${1}` | Primer argumento |
-| `${extension}` | `${2}` | Segundo argumento |
-| `${ruta}` | `${3}` | Tercer argumento |
+| `\${nombre}` | `\${1}` | Primer argumento |
+| `\${archivo}` | `\${1}` | Primer argumento |
+| `\${extension}` | `\${2}` | Segundo argumento |
+| `\${ruta}` | `\${3}` | Tercer argumento |
 
 ## Consejos de uso
 
@@ -106,17 +106,17 @@ sn buscar "archivo con espacios.txt"
 ### 2. Escapar caracteres especiales
 
 ```bash
-# Si tu comando tiene $, necesitas escaparlo
-sn add precio "echo El precio es \\$${1}"
+# Si tu comando tiene \$, necesitas escaparlo
+sn add precio "echo El precio es \\\$\${1}"
 sn precio 100
-# Output: El precio es $100
+# Output: El precio es \$100
 ```
 
 ### 3. Combinar placeholders
 
 ```bash
 # Puedes usar múltiples placeholders del mismo argumento
-sn add info "echo 'Archivo: ${1}, Extensión: ${2}, Nombre: ${nombre}'"
+sn add info "echo 'Archivo: \${1}, Extensión: \${2}, Nombre: \${nombre}'"
 sn info documento txt
 # Output: Archivo: documento, Extensión: txt, Nombre: documento
 ```
@@ -125,9 +125,9 @@ sn info documento txt
 
 ```bash
 # Si un placeholder no tiene argumento, se queda como texto
-sn add saludo "echo Hola ${1}"
+sn add saludo "echo Hola \${1}"
 sn saludo
-# Output: Hola ${1}  (no se reemplaza)
+# Output: Hola \${1}  (no se reemplaza)
 ```
 
 ## Ejemplos avanzados
@@ -136,7 +136,7 @@ sn saludo
 
 ```bash
 # Crear backup con timestamp
-sn add backup-completo "tar -czf backup_${1}_$(date +%Y%m%d).tar.gz ${2} && echo Backup de ${nombre} completado"
+sn add backup-completo "tar -czf backup_\${1}_\$(date +%Y%m%d).tar.gz \${2} && echo Backup de \${nombre} completado"
 sn backup-completo proyecto /home/user/project
 ```
 
@@ -144,7 +144,7 @@ sn backup-completo proyecto /home/user/project
 
 ```bash
 # Verificar y luego ejecutar
-sn add instalar-seguro "if command -v ${1} &> /dev/null; then echo 'Ya instalado'; else sudo apt install -y ${1}; fi"
+sn add instalar-seguro "if command -v \${1} &> /dev/null; then echo 'Ya instalado'; else sudo apt install -y \${1}; fi"
 sn instalar-seguro htop
 ```
 
@@ -152,34 +152,34 @@ sn instalar-seguro htop
 
 ```bash
 # Test de conectividad
-sn add ping-host "ping -c 4 ${1} | grep 'packet loss'"
+sn add ping-host "ping -c 4 \${1} | grep 'packet loss'"
 sn ping-host google.com
 ```
 
 ## Preguntas frecuentes
 
 ### ¿Puedo usar más de 3 argumentos?
-**¡Sí!** Puedes usar `${4}`, `${5}`, `${6}`, etc. sin límite.
+**¡Sí!** Puedes usar `\${4}`, `\${5}`, `\${6}`, etc. sin límite.
 
 ### ¿Qué pasa si no paso todos los argumentos?
 Los placeholders sin argumento se mantienen como texto en el comando.
 
 ### ¿Puedo usar el mismo argumento múltiples veces?
-**¡Sí!** Puedes usar `${1}` tantas veces como necesites en el mismo comando.
+**¡Sí!** Puedes usar `\${1}` tantas veces como necesites en el mismo comando.
 
 ### ¿Los argumentos son case-sensitive?
-**Sí**, los placeholders `${nombre}` y `${NOMBRE}` son diferentes.
+**Sí**, los placeholders `\${nombre}` y `\${NOMBRE}` son diferentes.
 
 ## Resumen
 
 ```bash
 # Sintaxis general
-sn add <nombre> "<comando con ${placeholders}>"
+sn add <nombre> "<comando con \${placeholders}>"
 sn <nombre> arg1 arg2 arg3 ...
 
 # Placeholders disponibles
-${1}, ${2}, ${3}, ...    # Por posición
-${nombre}, ${archivo}    # Primer argumento  
-${extension}             # Segundo argumento
-${ruta}                  # Tercer argumento
+\${1}, \${2}, \${3}, ...    # Por posición
+\${nombre}, \${archivo}    # Primer argumento  
+\${extension}             # Segundo argumento
+\${ruta}                  # Tercer argumento
 ```

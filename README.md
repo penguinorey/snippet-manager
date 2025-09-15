@@ -72,7 +72,7 @@ sn instala vim
 
 ```bash
 # Búsqueda de archivos
-sn add busca "find . -name \${1} -type f"
+sn add busca "find . -name \\${1} -type f"
 sn busca "*.txt"
 
 # Copia de archivos con múltiples argumentos
@@ -89,16 +89,16 @@ Saber más [manual de sn con argumentos](Manual-Argumentos.md)
 ## Placeholders disponibles
 
 ### Por posición
-- `${1}` - Primer argumento
-- `${2}` - Segundo argumento  
-- `${3}` - Tercer argumento
-- `${n}` - Enésimo argumento
+- `\${1}` - Primer argumento
+- `\${2}` - Segundo argumento  
+- `\${3}` - Tercer argumento
+- `\${n}` - Enésimo argumento
 
 ### Con nombres descriptivos
-- `${nombre}` - Primer argumento
-- `${archivo}` - Primer argumento
-- `${extension}` - Segundo argumento
-- `${ruta}` - Tercer argumento
+- `\${nombre}` - Primer argumento
+- `\${archivo}` - Primer argumento
+- `\${extension}` - Segundo argumento
+- `\${ruta}` - Tercer argumento
 
 ## Estructura del archivo de snippets
 
@@ -116,7 +116,7 @@ Los snippets se almacenan en `~/.snippets.json`:
   },
   {
     "snippet": "busca-pdf",
-    "command": "find . -name ${nombre}.pdf"
+    "command": "find . -name \${nombre}.pdf"
   }
 ]
 ```
@@ -135,15 +135,15 @@ Los snippets se almacenan en `~/.snippets.json`:
 
 ```bash
 # Reemplazo de texto en archivos
-sn add reemplazar "sed 's/${1}/${2}/g' ${3} > ${3}.modificado"
+sn add reemplazar "sed 's/\${1}/\${2}/g' \${3} > \${3}.modificado"
 sn reemplazar viejo nuevo archivo.txt
 
 # Descarga y procesamiento
-sn add descargar "wget ${1} && tar -xzf ${archivo} && cd ${nombre} && make"
+sn add descargar "wget \${1} && tar -xzf \${archivo} && cd \${nombre} && make"
 sn descargar http://ejemplo.com/package.tar.gz
 
 # Backup con timestamp
-sn add backup "tar -czf backup_$(date +%Y%m%d).tar.gz ${1} && mv backup_*.tar.gz ${2}/"
+sn add backup "tar -czf backup_\$(date +%Y%m%d).tar.gz \${1} && mv backup_*.tar.gz \${2}/"
 sn backup /home/user/documents /mnt/backup
 ```
 
@@ -161,7 +161,7 @@ sn list  # Verifica que el snippet exista
 
 **Los argumentos no se reemplazan**
 - Asegúrate de usar comillas dobles alrededor del comando
-- Usa los placeholders correctos (${1}, ${2}, etc.)
+- Usa los placeholders correctos (\${1}, \${2}, etc.)
 
 
 ## Contribuir
