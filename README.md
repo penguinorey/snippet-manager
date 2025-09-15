@@ -72,15 +72,15 @@ sn instala vim
 
 ```bash
 # Búsqueda de archivos
-sn add busca "find . -name \"${1}\" -type f"
+sn add busca "find . -name \${1} -type f"
 sn busca "*.txt"
 
 # Copia de archivos con múltiples argumentos
-sn add copia "cp ${1} ${2}/"
+sn add copia "cp \${1} \${2}"
 sn copia documento.pdf /backup/
 
 # Comandos complejos con placeholders nombrados
-sn add comprimir "tar -czf ${nombre}.tar.gz ${archivo} --directory=${ruta}"
+sn add comprimir "tar -czf \${nombre}.tar.gz \${archivo} --directory=\${ruta}"
 sn comprimir mi_proyecto /home/user/projects /backup
 ```
 

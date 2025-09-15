@@ -15,6 +15,18 @@ private:
     std::string configPath;
     std::map<std::string, std::string> snippets;
 
+    std::string escapeJson(const std::string& s) {
+        std::ostringstream o;
+        for (auto c = s.cbegin(); c != s.cend(); c++) {
+            if (*c == '"' || *c == '\\' || ('\x00' <= *c && *c <= '\x1f')) {
+                o << "\\" << *c;
+            } else {
+                o << *c;
+            }
+        }
+        return o.str();
+    }
+
 public:
     SnippetManager() : configPath(std::string(getenv("HOME")) + "/.snippets.json") {}
 
@@ -73,8 +85,8 @@ public:
         for (const auto& [name, command] : snippets) {
             if (!first) file << "," << std::endl;
             file << "  {" << std::endl;
-            file << "    \"snippet\":\"" << name << "\"," << std::endl;
-            file << "    \"command\":\"" << command << "\"" << std::endl;
+            file << "    \"snippet\":\"" << escapeJson(name) << "\"," << std::endl;
+            file << "    \"command\":\"" << escapeJson(command) << "\"" << std::endl;
             file << "  }";
             first = false;
         }
@@ -112,6 +124,49 @@ public:
         return saveSnippets();
     }
 
+    bool updateSnippet(const std::string& name, const std::string& newCommand) {
+        if (!loadSnippets()) return false;
+
+        if (snippets.find(name) == snippets.end()) {
+            std::cerr << "Error: Snippet '" << name << "' no encontrado." << std::endl;
+            return false;
+        }
+
+        snippets[name] = newCommand;
+        std::cout << "Snippet '" << name << "' actualizado correctamente." << std::endl;
+        return saveSnippets();
+    }
+
+    bool deleteSnippet(const std::string& name) {
+        if (!loadSnippets()) return false;
+
+        auto it = snippets.find(name);
+        if (it == snippets.end()) {
+            std::cerr << "Error: Snippet '" << name << "' no encontrado." << std::endl;
+            return false;
+        }
+
+        std::cout << "¿Estás seguro de que quieres eliminar el snippet '" << name << "'? (s/N): ";
+        std::string response;
+        std::getline(std::cin, response);
+        
+        if (response != "s" && response != "S") {
+            std::cout << "Eliminación cancelada." << std::endl;
+            return false;
+        }
+
+        snippets.erase(it);
+        std::cout << "Snippet '" << name << "' eliminado correctamente." << std::endl;
+        return saveSnippets();
+    }
+
+    std::string escapeArgument(const std::string& arg) {
+        if (arg.find(' ') != std::string::npos) {
+            return "\"" + arg + "\"";
+        }
+        return arg;
+    }
+
     bool executeSnippet(const std::string& name, const std::vector<std::string>& args = {}) {
         if (!loadSnippets()) return false;
 
@@ -123,51 +178,50 @@ public:
 
         std::string command = it->second;
         
-        // Reemplazar argumentos numéricos (${1}, ${2}, ${3}, ...)
         for (size_t i = 0; i < args.size(); ++i) {
             std::string placeholder = "${" + std::to_string(i + 1) + "}";
             size_t pos = command.find(placeholder);
             while (pos != std::string::npos) {
-                command.replace(pos, placeholder.length(), args[i]);
-                pos = command.find(placeholder, pos + args[i].length());
+                std::string escapedArg = escapeArgument(args[i]);
+                command.replace(pos, placeholder.length(), escapedArg);
+                pos = command.find(placeholder, pos + escapedArg.length());
             }
         }
         
-        // Reemplazar argumentos con nombres específicos
         if (!args.empty()) {
-            // ${nombre} -> primer argumento
             std::string placeholder = "${nombre}";
             size_t pos = command.find(placeholder);
             while (pos != std::string::npos) {
-                command.replace(pos, placeholder.length(), args[0]);
-                pos = command.find(placeholder, pos + args[0].length());
+                std::string escapedArg = escapeArgument(args[0]);
+                command.replace(pos, placeholder.length(), escapedArg);
+                pos = command.find(placeholder, pos + escapedArg.length());
             }
             
-            // ${archivo} -> primer argumento
             placeholder = "${archivo}";
             pos = command.find(placeholder);
             while (pos != std::string::npos) {
-                command.replace(pos, placeholder.length(), args[0]);
-                pos = command.find(placeholder, pos + args[0].length());
+                std::string escapedArg = escapeArgument(args[0]);
+                command.replace(pos, placeholder.length(), escapedArg);
+                pos = command.find(placeholder, pos + escapedArg.length());
             }
             
-            // ${extension} -> segundo argumento (si existe)
             if (args.size() > 1) {
                 placeholder = "${extension}";
                 pos = command.find(placeholder);
                 while (pos != std::string::npos) {
-                    command.replace(pos, placeholder.length(), args[1]);
-                    pos = command.find(placeholder, pos + args[1].length());
+                    std::string escapedArg = escapeArgument(args[1]);
+                    command.replace(pos, placeholder.length(), escapedArg);
+                    pos = command.find(placeholder, pos + escapedArg.length());
                 }
             }
             
-            // ${ruta} -> tercer argumento (si existe)
             if (args.size() > 2) {
                 placeholder = "${ruta}";
                 pos = command.find(placeholder);
                 while (pos != std::string::npos) {
-                    command.replace(pos, placeholder.length(), args[2]);
-                    pos = command.find(placeholder, pos + args[2].length());
+                    std::string escapedArg = escapeArgument(args[2]);
+                    command.replace(pos, placeholder.length(), escapedArg);
+                    pos = command.find(placeholder, pos + escapedArg.length());
                 }
             }
         }
@@ -179,28 +233,33 @@ public:
     bool fileExists() {
         return fs::exists(configPath);
     }
+
+    bool snippetExists(const std::string& name) {
+        if (!loadSnippets()) return false;
+        return snippets.find(name) != snippets.end();
+    }
 };
 
 void showHelp() {
     std::cout << "Uso: sn [comando] [argumentos...]" << std::endl;
     std::cout << "Comandos:" << std::endl;
-    std::cout << "  init          - Inicializa el archivo de snippets" << std::endl;
-    std::cout << "  list          - Lista todos los snippets disponibles" << std::endl;
+    std::cout << "  init                 - Inicializa el archivo de snippets" << std::endl;
+    std::cout << "  list                 - Lista todos los snippets disponibles" << std::endl;
     std::cout << "  add <nombre> \"<comando>\" - Agrega un nuevo snippet" << std::endl;
-    std::cout << "  <nombre> [args...]     - Ejecuta un snippet con argumentos" << std::endl;
+    std::cout << "  update <nombre> \"<comando>\" - Actualiza un snippet existente" << std::endl;
+    std::cout << "  delete <nombre>      - Elimina un snippet" << std::endl;
+    std::cout << "  <nombre> [args...]   - Ejecuta un snippet con argumentos" << std::endl;
+    std::cout << "  help                 - Muestra esta ayuda" << std::endl;
     std::cout << std::endl;
     std::cout << "Placeholders disponibles en los comandos:" << std::endl;
-    std::cout << "  ${1}, ${2}, ${3}, ... - Argumentos por posición" << std::endl;
+    std::cout << "  ${1}, ${2}, ${3}, ... - Argumentos por posicion" << std::endl;
     std::cout << "  ${nombre}             - Primer argumento" << std::endl;
     std::cout << "  ${archivo}            - Primer argumento" << std::endl;
     std::cout << "  ${extension}          - Segundo argumento" << std::endl;
     std::cout << "  ${ruta}               - Tercer argumento" << std::endl;
     std::cout << std::endl;
-    std::cout << "Ejemplos:" << std::endl;
-    std::cout << "  sn add busca \"find . -name \\${1} -type f\"" << std::endl;
-    std::cout << "  sn busca \"*.txt\"" << std::endl;
-    std::cout << "  sn add copia \"cp \\${1} \\${2}/\"" << std::endl;
-    std::cout << "  sn copia archivo.txt /backup/" << std::endl;
+    std::cout << "NOTA: Usa \\${1} en lugar de ${1} para evitar que el shell expanda la variable" << std::endl;
+    std::cout << "Ejemplo: sn add push \"git add . && git commit -m \\${1} && git push origin\"" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -224,7 +283,7 @@ int main(int argc, char* argv[]) {
     else if (command == "add") {
         if (argc < 4) {
             std::cerr << "Uso: sn add <nombre> \"<comando>\"" << std::endl;
-            std::cerr << "Ejemplo: sn add busca \"find . -name \\${1}\"" << std::endl;
+            std::cerr << "Ejemplo: sn add push \"git add . && git commit -m \\${1} && git push origin\"" << std::endl;
             return 1;
         }
         if (!manager.fileExists()) {
@@ -232,6 +291,30 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         manager.addSnippet(argv[2], argv[3]);
+    }
+    else if (command == "update") {
+        if (argc < 4) {
+            std::cerr << "Uso: sn update <nombre> \"<nuevo_comando>\"" << std::endl;
+            std::cerr << "Ejemplo: sn update push \"git add . && git commit -m \\${1} && git push origin master\"" << std::endl;
+            return 1;
+        }
+        if (!manager.fileExists()) {
+            std::cerr << "Error: Primero ejecuta 'sn init' para inicializar los snippets" << std::endl;
+            return 1;
+        }
+        manager.updateSnippet(argv[2], argv[3]);
+    }
+    else if (command == "delete") {
+        if (argc < 3) {
+            std::cerr << "Uso: sn delete <nombre>" << std::endl;
+            std::cerr << "Ejemplo: sn delete push" << std::endl;
+            return 1;
+        }
+        if (!manager.fileExists()) {
+            std::cerr << "Error: Primero ejecuta 'sn init' para inicializar los snippets" << std::endl;
+            return 1;
+        }
+        manager.deleteSnippet(argv[2]);
     }
     else if (command == "help") {
         showHelp();
