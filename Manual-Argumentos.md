@@ -44,7 +44,7 @@ sn comprimir proyecto /home/user/project
 
 ```bash
 # Crear snippet
-sn add buscar "find . -name \"\${1}\" -type f"
+sn add buscar "find . -name \${1} -type f"
 
 # Usar con diferentes argumentos
 sn buscar "*.txt"          # Busca todos los .txt
