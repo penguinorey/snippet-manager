@@ -107,9 +107,9 @@ sn buscar "archivo con espacios.txt"
 
 ```bash
 # Si tu comando tiene \$, necesitas escaparlo
-sn add precio "echo El precio es \\\$\${1}"
+sn add precio "echo El precio es $ \${1}mxn"
 sn precio 100
-# Output: El precio es \$100
+# Output: El precio es $100mxn
 ```
 
 ### 3. Combinar placeholders
